@@ -1,2 +1,2 @@
-this is the commit on hello.txt on dev branch
+this is the commit on hello.txt on main branch now
 
