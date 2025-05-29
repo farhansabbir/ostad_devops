@@ -33,9 +33,8 @@ jobs:
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
-        id: test-results
         with:
-          name: test-artifact
+          name: test-results
           path: ./assignment2/test-results.json
 
 
