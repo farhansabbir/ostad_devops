@@ -61,7 +61,7 @@ jobs:
         with:
           name: results
           run-id: ${{ github.event.workflow_run.id }}
-          path: ./assignment2/test-results.json
+          path: ./assignment2/
       - name: Check content of artifact
         run: cat ./assignment2/test-results.json
 
