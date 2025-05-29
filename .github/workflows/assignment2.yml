@@ -1,25 +1,19 @@
-
-name: Test Node app
+name: Test and deploy a node app
 
 on:
-
   push:
     branches: [ "assignment2" ]
-
-
   workflow_dispatch:
-
 
 jobs:
 
   test:
 
     runs-on: ubuntu-latest
-
-
     steps:
 
       - uses: actions/checkout@v4
+
       - name: setup to use node 22
         uses: actions/setup-node@v3
         with:
@@ -48,11 +42,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: use node 22
         uses: actions/setup-node@v3
         with:
           node-version: 22
-          
 
       - name: Install dependencies
         run: cd assignment2 && npm install
@@ -62,6 +56,7 @@ jobs:
           name: results
           run-id: ${{ github.event.workflow_run.id }}
           path: ./assignment2/
+
       - name: Check content of artifact
         run: cat ./assignment2/test-results.json
       # - name: Deploy application
