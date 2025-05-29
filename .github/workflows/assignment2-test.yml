@@ -33,5 +33,38 @@ jobs:
         run: cd assignment2 && npm install
 
       - name: Run tests
-        run: cd assignment2 && npm run check 
+        run: cd assignment2 && npm run check
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-artifact
+          path: ./assignment2/test-results.json
+
+
+
+
+  # deploy:
+  #   # The type of runner that the job will run on
+  #   runs-on: mbpro-m1pro
+
+  #   # Steps represent a sequence of tasks that will be executed as part of the job
+  #   steps:
+  #     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+  #     - uses: actions/checkout@v4
+
+  #     # Runs a single command using the runners shell
+  #     - name: use node 22
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 22
+          
+
+  #     - name: Install dependencies
+  #       run: cd assignment2 && npm install
+
+  #     - uses: actions/download-artifact@v3
+  #       with:
+  #         name: test-artifact
+  #         path: ./assignment2/test-results.json
 
