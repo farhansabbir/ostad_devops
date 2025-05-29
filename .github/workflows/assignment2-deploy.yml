@@ -24,8 +24,11 @@ jobs:
       - uses: actions/checkout@v4
 
       # Runs a single command using the runners shell
-      - name: APT update and install node 22
-        run: sudo apt-get update && sudo apt-get install -y nodejs
+      - name: use node 22
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          cache: "node"
 
       - name: Install dependencies
         run: cd assignment2 && npm install
