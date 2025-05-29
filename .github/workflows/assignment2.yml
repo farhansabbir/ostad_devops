@@ -64,4 +64,6 @@ jobs:
           path: ./assignment2/
       - name: Check content of artifact
         run: cat ./assignment2/test-results.json
+      - name: Deploy application
+        run: cd assignment2 && npm start
 
