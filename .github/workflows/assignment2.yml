@@ -44,6 +44,7 @@ jobs:
   deploy:
 
     runs-on: mbpro-m1pro
+    needs: test
 
     steps:
       - uses: actions/checkout@v4
