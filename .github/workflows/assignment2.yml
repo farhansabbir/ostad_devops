@@ -58,7 +58,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: test-artifact
+          name: test-results
           path: ./assignment2/test-results.json
       - name: Check content of artifact
         run: cat ./assignment2/test-results.json
