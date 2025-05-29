@@ -24,8 +24,11 @@ jobs:
       - uses: actions/checkout@v4
 
       # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: apt install node@22 
+      - name: APT update and install node 22
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          
 
       # Runs a set of commands using the runners shell
       # - name: Run a multi-line script
