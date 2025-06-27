@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ostad-server-deployment
+  namespace: farhansabbir
+  labels:
+    app: ostad-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ostad-server
+  template:
+    metadata:
+      labels:
+        app: ostad-server
+    spec:
+      containers:
+      - name: ostad-server
+        image: farhansabbir/ostad-server:latest # Replace with your image
+        ports:
+        - containerPort: 5050
+        env:
+        - name: MONGO_URL
+          value: "mongodb://ostad:ostad@mongo:27017" # Assuming mongo service is named 'mongo'
