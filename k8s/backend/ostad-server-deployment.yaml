@@ -17,9 +17,9 @@ spec:
     spec:
       containers:
       - name: ostad-server
-        image: farhansabbir/ostad-server:latest # Replace with your image
+        image: farhansabbir/ostad-server:latest 
         ports:
         - containerPort: 5050
         env:
         - name: MONGO_URL
-          value: "mongodb://ostad:ostad@mongo:27017" # Assuming mongo service is named 'mongo'
+          value: "mongodb://ostad:ostad@mongo:27017" 

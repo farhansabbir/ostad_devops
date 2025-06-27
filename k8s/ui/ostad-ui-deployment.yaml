@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: ostad-ui
-        image: farhansabbir/ostad-ui:latest # Replace with your image
+        image: farhansabbir/ostad-ui:latest 
         ports:
         - containerPort: 80
