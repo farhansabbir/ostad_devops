@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ostad-ui-deployment
+  namespace: farhansabbir
+  labels:
+    app: ostad-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ostad-ui
+  template:
+    metadata:
+      labels:
+        app: ostad-ui
+    spec:
+      containers:
+      - name: ostad-ui
+        image: farhansabbir/ostad-ui:latest # Replace with your image
+        ports:
+        - containerPort: 80
