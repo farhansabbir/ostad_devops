@@ -32,8 +32,17 @@ spec:
               name: ostad-db-secret
               key: password
         - name: MONGO_HOST
-          value: mongo
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MONGO_HOST
         - name: MONGO_PORT
-          value: "27017"
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MONGO_PORT
         - name: MONGO_DB_NAME
-          value: Ostad-DB
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MONGO_DB_NAME

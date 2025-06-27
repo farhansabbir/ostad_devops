@@ -22,9 +22,15 @@ spec:
         - containerPort: 8081
         env:
         - name: ME_CONFIG_MONGODB_SERVER
-          value: mongo
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: ME_CONFIG_MONGODB_SERVER
         - name: ME_CONFIG_MONGODB_PORT
-          value: "27017"
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: ME_CONFIG_MONGODB_PORT
         - name: ME_CONFIG_MONGODB_ADMINUSERNAME
           valueFrom:
             secretKeyRef:
