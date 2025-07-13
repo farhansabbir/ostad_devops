@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-mongo-user
+  namespace: farhansabbir
+spec:
+  template:
+    spec:
+      containers:
+      - name: mongo-client
+        image: mongo:latest
+        command: ["bash", "-c"]
+        args:
+          - |
+            sleep 10 && mongosh --host mongo --authenticationDatabase admin -u $(MONGO_ROOT_USERNAME) -p $(MONGO_ROOT_PASSWORD) --eval "db.getSiblingDB('admin').createUser({ user: '$(MONGO_APP_USERNAME)', pwd: '$(MONGO_APP_PASSWORD)', roles: [{ role: 'readWrite', db: 'Ostad-DB' }] })"
+        env:
+        - name: MONGO_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-root-secret
+              key: username
+        - name: MONGO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-root-secret
+              key: password
+        - name: MONGO_APP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: ostad-db-secret
+              key: username
+        - name: MONGO_APP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ostad-db-secret
+              key: password
+      restartPolicy: Never
+  backoffLimit: 4
