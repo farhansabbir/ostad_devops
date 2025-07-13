@@ -1,15 +1,4 @@
-# MongoDB Persistent Volume Claim
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mongo-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
+
 # MongoDB Deployment
 apiVersion: apps/v1
 kind: Deployment
@@ -42,8 +31,11 @@ spec:
           mountPath: /data/db
       volumes:
       - name: mongo-storage
-        persistentVolumeClaim:
-          claimName: mongo-pvc
+        hostPath:
+          # path on the host node
+          path: /mnt/mongo-data
+          # create the directory if it doesn't exist
+          type: DirectoryOrCreate
 ---
 # MongoDB Service
 apiVersion: v1
