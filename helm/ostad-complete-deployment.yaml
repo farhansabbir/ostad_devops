@@ -1,4 +1,3 @@
-
 # MongoDB Deployment
 apiVersion: apps/v1
 kind: Deployment
@@ -16,6 +15,10 @@ spec:
       labels:
         app: mongo
     spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
       containers:
       - name: mongo
         image: mongo:latest
@@ -67,6 +70,10 @@ spec:
       labels:
         app: ostad-server
     spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
       containers:
       - name: ostad-server
         image: farhansabbir/ostad-server
@@ -106,6 +113,10 @@ spec:
       labels:
         app: ostad-ui
     spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
       containers:
       - name: ostad-ui
         image: farhansabbir/ostad-ui
