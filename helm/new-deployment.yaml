@@ -1,0 +1,136 @@
+# MongoDB Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:latest
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: "ostad"
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: "ostad"
+        volumeMounts:
+        - name: mongo-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongo-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+---
+# MongoDB Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# MongoDB Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+---
+# Ostad Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ostad-server-deployment
+  labels:
+    app: ostad-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ostad-server
+  template:
+    metadata:
+      labels:
+        app: ostad-server
+    spec:
+      containers:
+      - name: ostad-server
+        image: farhansabbir/ostad-server
+        ports:
+        - containerPort: 5050
+        env:
+        - name: MONGO_URL
+          value: "mongodb://ostad:ostad@mongo:27017"
+---
+# Ostad Server Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ostad-server-service
+spec:
+  selector:
+    app: ostad-server
+  ports:
+  - protocol: TCP
+    port: 5050
+    targetPort: 5050
+---
+# Ostad UI Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ostad-ui-deployment
+  labels:
+    app: ostad-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ostad-ui
+  template:
+    metadata:
+      labels:
+        app: ostad-ui
+    spec:
+      containers:
+      - name: ostad-ui
+        image: farhansabbir/ostad-serverui
+        ports:
+        - containerPort: 5173
+---
+# Ostad UI Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ostad-ui-service
+spec:
+  selector:
+    app: ostad-ui
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: 5173
+    targetPort: 5173
+    nodePort: 30007
