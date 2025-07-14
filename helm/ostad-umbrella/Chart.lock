@@ -1,0 +1,15 @@
+dependencies:
+- name: mongo-chart
+  repository: file://./charts/mongo-chart
+  version: 0.1.0
+- name: mongo-express-chart
+  repository: file://./charts/mongo-express-chart
+  version: 0.1.0
+- name: ostad-server-chart
+  repository: file://./charts/ostad-server-chart
+  version: 0.1.0
+- name: ostad-ui-chart
+  repository: file://./charts/ostad-ui-chart
+  version: 0.1.0
+digest: sha256:d9f0e63c12df7d059aa5b5acd511855b11854df2754eeae38c37b8ea896df42f
+generated: "2025-07-13T22:27:25.85358-06:00"

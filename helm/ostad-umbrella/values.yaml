@@ -1,0 +1,70 @@
+# Global values
+replicaCount: 1
+
+# Sub-chart configurations
+mongo-chart:
+  replicaCount: 1
+  image:
+    repository: mongo
+    pullPolicy: IfNotPresent
+    tag: latest
+  service:
+    port: 27017
+  volume:
+    hostPath: /mnt/mongo-data
+  env:
+    username: ostad
+    password: ostad
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+mongo-express-chart:
+  replicaCount: 1
+  image:
+    repository: mongo-express
+    pullPolicy: IfNotPresent
+    tag: latest
+  service:
+    type: NodePort
+    port: 8081
+    nodePort: 30008
+  env:
+    mongoServer: mongo
+    username: ostad
+    password: ostad
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+ostad-server-chart:
+  replicaCount: 1
+  image:
+    repository: farhansabbir/ostad-server
+    pullPolicy: IfNotPresent
+    tag: latest
+  service:
+    port: 5050
+  env:
+    mongoUrl: "mongodb://ostad:ostad@mongo:27017"
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+ostad-ui-chart:
+  replicaCount: 1
+  image:
+    repository: farhansabbir/ostad-serverui
+    pullPolicy: IfNotPresent
+    tag: latest
+  service:
+    type: NodePort
+    port: 5173
+    nodePort: 30007
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"

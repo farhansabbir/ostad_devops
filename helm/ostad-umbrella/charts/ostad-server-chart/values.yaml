@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  repository: farhansabbir/ostad-server
+  pullPolicy: IfNotPresent
+  tag: latest
+
+service:
+  port: 5050
+
+env:
+  mongoUrl: "mongodb://ostad:ostad@mongo:27017"
+
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"

@@ -1,0 +1,21 @@
+replicaCount: 1
+
+image:
+  repository: mongo-express
+  pullPolicy: IfNotPresent
+  tag: latest
+
+service:
+  type: NodePort
+  port: 8081
+  nodePort: 30008
+
+env:
+  mongoServer: mongo
+  username: ostad
+  password: ostad
+
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"

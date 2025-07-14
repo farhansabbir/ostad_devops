@@ -1,0 +1,16 @@
+replicaCount: 1
+
+image:
+  repository: farhansabbir/ostad-serverui
+  pullPolicy: IfNotPresent
+  tag: latest
+
+service:
+  type: NodePort
+  port: 5173
+  nodePort: 30007
+
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
