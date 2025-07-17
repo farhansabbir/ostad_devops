@@ -24,6 +24,6 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
-        file: ./Dockerfile
+        file: ./next-japan/Dockerfile
         push: true
-        tags: farhansabbir/nextjs:latest
+        tags: farhansabbir/sonarqube-assignment:latest
