@@ -41,5 +41,5 @@ yarn-error.log*
 next-env.d.ts
 
 # # GitHub Actions
-# !.github/
-# !.github/workflows/
+!.github/
+!.github/workflows/
