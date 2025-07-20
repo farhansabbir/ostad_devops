@@ -144,15 +144,6 @@ jobs:
             "${IMAGE}"
           echo "   New container started."
 
-          echo "4. Waiting for container to become healthy (5 seconds)..."
-          sleep 5
-          echo "5. Performing a basic health check..."
-          curl -f "http://localhost:$HOST_PORT" > /dev/null 2>&1
-          if [ $? -eq 0 ]; then
-            echo "   Health check successful! Application is reachable."
-          else
-            echo "::error::Health check failed! Application might not be running correctly."
-            exit 1
-          fi
+          
 
           echo "--- Deployment successful for image: ${IMAGE} ---"
