@@ -19,6 +19,8 @@ RUN npm run lint
 # Run build - this will now generate the 'out' directory
 RUN npm run build
 
+RUN ls -la
+
 # 2. Final Stage
 FROM nginx:1.21.0-alpine
 WORKDIR /usr/share/nginx/html
