@@ -108,7 +108,6 @@ jobs:
     # Only run deployment if the previous job succeeded AND it was a Git tag push
     # You can adjust this 'if' condition based on your deployment strategy (e.g., also deploy from 'main')
     if: success()
-
     steps:
       - name: Log in to Docker Hub
         # This step is essential if your Docker Hub repository is private, allowing 'docker pull'
