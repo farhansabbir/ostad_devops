@@ -1,0 +1,71 @@
+name: Deploy to EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+        default: 'latest'
+      docker_image_name:
+        description: 'Full Docker image name (e.g., user/app-name)'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, deploy-ec2]
+    if: github.event.action == 'deploy-to-ec2'
+    steps:
+      - name: Get image tag and name from workflow dispatch
+        run: |
+          DEPLOY_IMAGE_TAG="${{ github.event.client_payload.image_tag || github.event.inputs.image_tag }}"
+          DEPLOY_DOCKER_IMAGE_NAME="${{ github.event.client_payload.docker_image_name || github.event.inputs.docker_image_name }}"
+
+          echo "::notice::Received request to deploy image: ${DEPLOY_DOCKER_IMAGE_NAME}:${DEPLOY_IMAGE_TAG}"
+          echo "IMAGE_TAG=${DEPLOY_IMAGE_TAG}" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_NAME=${DEPLOY_DOCKER_IMAGE_NAME}" >> $GITHUB_ENV
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Deploy application on EC2
+        run: |
+          IMAGE="${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+          CONTAINER_NAME="nextjs-app"
+          HOST_PORT="80"
+          CONTAINER_PORT="3000"
+
+          echo "--- Starting Deployment of ${IMAGE} ---"
+
+          echo "1. Stopping and removing old container '${CONTAINER_NAME}' if it exists..."
+          docker stop "$CONTAINER_NAME" || true
+          docker rm "$CONTAINER_NAME" || true
+          echo "   Old container handled."
+
+          echo "2. Pulling new image: ${IMAGE}..."
+          docker pull "${IMAGE}"
+          echo "   Image pulled successfully."
+
+          echo "3. Running new container '${CONTAINER_NAME}' from image ${IMAGE}..."
+          docker run -d \
+            --name "$CONTAINER_NAME" \
+            -p "$HOST_PORT":"$CONTAINER_PORT" \
+            --restart unless-stopped \
+            "${IMAGE}"
+          echo "   New container started."
+
+          echo "4. Waiting for container to become healthy (5 seconds)..."
+          sleep 5
+          echo "5. Performing a basic health check..."
+          curl -f "http://localhost:$HOST_PORT" > /dev/null 2>&1
+          if [ $? -eq 0 ]; then
+            echo "   Health check successful! Application is reachable."
+          else
+            echo "::error::Health check failed! Application might not be running correctly."
+            exit 1
+          fi
+
+          echo "--- Deployment successful for image: ${IMAGE} ---"
