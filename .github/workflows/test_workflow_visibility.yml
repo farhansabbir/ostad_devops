@@ -1,0 +1,8 @@
+name: Workflow Visibility Test
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "This is a test to see if the workflow is visible."
