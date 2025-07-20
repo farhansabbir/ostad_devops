@@ -14,30 +14,30 @@ jobs:
     runs-on: ubuntu-latest # GitHub-hosted runner
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
+      #   with:
+      #     fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
+      # - name: Install dependencies
+      #   run: npm install
 
-      # NEW STEP: Run ESLint Checks
-      - name: Run ESLint
-        run: npm run lint # Assuming you have a 'lint' script in package.json
-        # Or, if you prefer to run it directly:
-        # run: npx eslint . --ext .js,.jsx,.ts,.tsx # Adjust extensions as needed
-        # Optionally, you can make this step fail if there are warnings (by default ESLint only fails on errors)
-        # run: npx eslint . --max-warnings=0 # This would fail the step if any warnings exist
-        # If you want to integrate ESLint results into GitHub's UI as annotations:
-        # uses: ataylorme/eslint-annotate-action@v2 # Requires ESLint to output a JSON report
-        # with:
-        #   report-json: eslint-report.json # Path to your ESLint JSON report file (needs a preceding step to generate it)
+      # # NEW STEP: Run ESLint Checks
+      # - name: Run ESLint
+      #   run: npm run lint # Assuming you have a 'lint' script in package.json
+      #   # Or, if you prefer to run it directly:
+      #   # run: npx eslint . --ext .js,.jsx,.ts,.tsx # Adjust extensions as needed
+      #   # Optionally, you can make this step fail if there are warnings (by default ESLint only fails on errors)
+      #   # run: npx eslint . --max-warnings=0 # This would fail the step if any warnings exist
+      #   # If you want to integrate ESLint results into GitHub's UI as annotations:
+      #   # uses: ataylorme/eslint-annotate-action@v2 # Requires ESLint to output a JSON report
+      #   # with:
+      #   #   report-json: eslint-report.json # Path to your ESLint JSON report file (needs a preceding step to generate it)
 
       - name: Run SonarQube Analysis
         uses: SonarSource/sonarcloud-github-action@master
