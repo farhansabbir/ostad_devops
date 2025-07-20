@@ -1,4 +1,4 @@
-import MonthlySheetClient from "./MonthlySheetClient";
+import MonthlySheetClient from "./MonthlySheetClient.js";
 
 export async function generateStaticParams() {
   // Generate params for the last 12 months as an example
