@@ -1,81 +1,86 @@
-name: Analyze and Build CI/CD
+name: Full CI/CD Pipeline
+
 on:
   push:
     branches:
-      - "assignment/sonarqube" # Trigger on pushes to this branch
+      - "assignment/sonarqube" # Trigger CI/CD for this branch
+      - "main"                 # Also trigger CI/CD for the main branch
     tags:
-      - "v*.*.*" # Trigger on Git tags like v1.0.0
+      - "v*.*.*" # Trigger full pipeline (including deployment) on Git tags
+
   pull_request:
     branches:
-      - "main" # Trigger on pull requests to main
+      - "main" # Trigger analysis/build on PRs to main (deployment usually skipped for PRs)
 
 env:
-  # Define DOCKER_IMAGE_NAME at the workflow level for global access
-  DOCKER_IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/nextjs
+  DOCKER_IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/nextjs # Your Docker Hub image name
 
 jobs:
-  sonarqube_analysis: # Renamed for clarity - 'sonarqube' was also a job name, can cause confusion
+  sonarqube_analysis:
     name: SonarQube Analyze and Quality Gate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20" # Ensure Node.js is set up for your project's build/lint
+          node-version: "20"
 
       - name: Install dependencies
-        run: npm install # Install dependencies for ESLint/SonarQube to work correctly
+        run: npm install
 
       # Optional: Re-enable ESLint when ready
       # - name: Run ESLint
       #   run: npm run lint
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@master # Use a specific version for stability
+        uses: SonarSource/sonarqube-scan-action@master # Use a specific version for stability, e.g., v2.x.x
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # Pass the host URL as env var
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
-        uses: SonarSource/sonarqube-quality-gate-action@master # Use a specific version for stability
+        uses: SonarSource/sonarqube-quality-gate-action@master # Use a specific version for stability, e.g., v2.x.x
         with:
           pollingTimeoutSec: 600
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # Pass the host URL as env var
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   build_and_push_docker_image:
-    needs: sonarqube_analysis # Depend on the new job name
     name: Build and Push Docker Image
+    needs: sonarqube_analysis # This job depends on 'sonarqube_analysis' succeeding
     runs-on: ubuntu-latest
     # Define when this job should run: on successful completion of 'sonarqube_analysis'
-    # AND when the push is to a Git tag (for production deployments)
-    # OR if you want to push to Docker Hub from 'main' branch, include it here.
-    # Current condition: Only builds/pushes on `main` branch pushes OR `v*.*.*` tag pushes
+    # AND when the push is to main, a Git tag, or 'assignment/sonarqube' branch.
+    # Deployment typically happens only on tags or main, but building might be desired on feature branches too.
+    # Adjust this condition if you ONLY want to build on tags/main.
     if: success() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/assignment/sonarqube')
+    
+    outputs: # Define outputs from this job to be used by dependent jobs
+      image_tag: ${{ steps.get_tag.outputs.IMAGE_TAG }} # Pass the determined image tag
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Determine Docker Image Tag
-        id: get_tag
+        id: get_tag # ID this step to reference its outputs
         run: |
-          # Default to 'latest' for non-tag pushes (e.g., if main branch pushes use 'latest')
-          IMAGE_TAG="latest"
+          IMAGE_TAG="latest" # Default tag for branch pushes
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            IMAGE_TAG="${{ github.ref_name }}" # Use the Git tag name directly
-            echo "::notice file=ci.yml::Workflow triggered by tag: $IMAGE_TAG"
+            IMAGE_TAG="${{ github.ref_name }}" # Use the Git tag name directly if triggered by a tag
+            echo "::notice file=ci-cd-pipeline.yml::Workflow triggered by tag: $IMAGE_TAG"
           else
-            echo "::notice file=ci.yml::Workflow triggered by branch push. Using 'latest' tag."
+            echo "::notice file=ci-cd-pipeline.yml::Workflow triggered by branch push. Using 'latest' tag."
           fi
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT # Set as output for subsequent steps
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT # Set as an output of this step
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -83,34 +88,72 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }} # Use DOCKERHUB_TOKEN as it's the secret name
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker image
-        id: docker_build
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
             ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.get_tag.outputs.IMAGE_TAG }}
-            ${{ env.DOCKER_IMAGE_NAME }}:latest
+            ${{ env.DOCKER_IMAGE_NAME }}:latest # Also push 'latest' alias (common for most recent production build)
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Trigger Self-Hosted Runner for Deployment
-        # This step runs only if the current workflow was triggered by a Git tag push AND successful
-        if: success() 
+  deploy_to_ec2:
+    name: Deploy to EC2 Instance
+    needs: build_and_push_docker_image # This job depends on the Docker build/push job succeeding
+    runs-on: [self-hosted, deploy-ec2] # This job runs on your self-hosted EC2 runner
+    # Only run deployment if the previous job succeeded AND it was a Git tag push
+    # You can adjust this 'if' condition based on your deployment strategy (e.g., also deploy from 'main')
+    if: success() && startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Log in to Docker Hub
+        # This step is essential if your Docker Hub repository is private, allowing 'docker pull'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Deploy application on EC2
         run: |
-          IMAGE_TAG="${{ steps.get_tag.outputs.IMAGE_TAG }}"
-          echo "Dispatching deployment workflow to self-hosted runner for tag: $IMAGE_TAG"
-          curl -X POST \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Authorization: token ${{ secrets.GH_PAT_DISPATCH }}" \
-          https://api.github.com/repos/${{ github.repository }}/dispatches \
-          -d '{
-            "event_type": "deploy-to-ec2",
-            "client_payload": {
-              "image_tag": "'"$IMAGE_TAG"'",
-              "docker_image_name": "${{ env.DOCKER_IMAGE_NAME }}"
-            }
-          }'
+          # Access the image tag from the output of the previous job
+          IMAGE_TAG="${{ needs.build_and_push_docker_image.outputs.image_tag }}"
+          IMAGE="${{ env.DOCKER_IMAGE_NAME }}:${IMAGE_TAG}"
+          CONTAINER_NAME="nextjs-app"
+          HOST_PORT="80"
+          CONTAINER_PORT="3000"
+
+          echo "--- Starting Deployment of ${IMAGE} ---"
+
+          echo "1. Stopping and removing old container '${CONTAINER_NAME}' if it exists..."
+          docker stop "$CONTAINER_NAME" || true
+          docker rm "$CONTAINER_NAME" || true
+          echo "   Old container handled."
+
+          echo "2. Pulling new image: ${IMAGE}..."
+          docker pull "${IMAGE}"
+          echo "   Image pulled successfully."
+
+          echo "3. Running new container '${CONTAINER_NAME}' from image ${IMAGE}..."
+          docker run -d \
+            --name "$CONTAINER_NAME" \
+            -p "$HOST_PORT":"$CONTAINER_PORT" \
+            --restart unless-stopped \
+            "${IMAGE}"
+          echo "   New container started."
+
+          echo "4. Waiting for container to become healthy (5 seconds)..."
+          sleep 5
+          echo "5. Performing a basic health check..."
+          curl -f "http://localhost:$HOST_PORT" > /dev/null 2>&1
+          if [ $? -eq 0 ]; then
+            echo "   Health check successful! Application is reachable."
+          else
+            echo "::error::Health check failed! Application might not be running correctly."
+            exit 1
+          fi
+
+          echo "--- Deployment successful for image: ${IMAGE} ---"
