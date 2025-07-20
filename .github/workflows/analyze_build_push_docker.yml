@@ -97,7 +97,7 @@ jobs:
           push: true
           tags: |
             ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.get_tag.outputs.IMAGE_TAG }}
-            ${{ env.DOCKER_IMAGE_NAME }}:latest # Also push 'latest' alias (common for most recent production build)
+            ${{ env.DOCKER_IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
