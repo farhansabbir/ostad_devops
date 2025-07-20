@@ -19,6 +19,10 @@ RUN npm run lint
 # Run build - this will now generate the 'out' directory
 RUN npm run build
 
+# Add a check to see if the 'out' directory was created.
+# If not, list the directory contents and exit with an error.
+RUN test -d out || (echo "Directory 'out' not found after build!" && ls -la && exit 1)
+
 # 2. Final Stage
 FROM nginx:1.21.0-alpine
 WORKDIR /usr/share/nginx/html
