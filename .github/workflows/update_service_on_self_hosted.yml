@@ -35,7 +35,7 @@ jobs:
       - name: Deploy application on EC2
         run: |
           IMAGE="${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
-          CONTAINER_NAME="your-express-app-container-name" # Ensure this matches your desired container name
+          CONTAINER_NAME="nextjs" # Ensure this matches your desired container name
           HOST_PORT="80"
           CONTAINER_PORT="3000" # Ensure this matches your Express app's port
 
