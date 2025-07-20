@@ -1,111 +1,131 @@
-name: CI/CD Pipeline - Build & Analyze
+# name: CI/CD Pipeline - Build & Analyze
 
-on:
-  push:
-    branches: [ "assignment/sonarqube" ]
-    tags:
-      - 'v*.*.*'
+# on:
+#   push:
+#     branches: [ "assignment/sonarqube" ]
+#     tags:
+#       - 'v*.*.*'
 
-env:
-  DOCKER_IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/nextjs # Replace 'your-express-app-name'
+# env:
+#   DOCKER_IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/nextjs # Replace 'your-express-app-name'
 
-jobs:
-  build_and_analyze:
-    runs-on: ubuntu-latest # GitHub-hosted runner
+# jobs:
+#   build_and_analyze:
+#     runs-on: ubuntu-latest # GitHub-hosted runner
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
+#       - name: Install dependencies
+#         run: npm install
 
-      # # NEW STEP: Run ESLint Checks
-      # - name: Run ESLint
-      #   run: npm run lint # Assuming you have a 'lint' script in package.json
-      #   # Or, if you prefer to run it directly:
-      #   # run: npx eslint . --ext .js,.jsx,.ts,.tsx # Adjust extensions as needed
-      #   # Optionally, you can make this step fail if there are warnings (by default ESLint only fails on errors)
-      #   # run: npx eslint . --max-warnings=0 # This would fail the step if any warnings exist
-      #   # If you want to integrate ESLint results into GitHub's UI as annotations:
-      #   # uses: ataylorme/eslint-annotate-action@v2 # Requires ESLint to output a JSON report
-      #   # with:
-      #   #   report-json: eslint-report.json # Path to your ESLint JSON report file (needs a preceding step to generate it)
+#       # # NEW STEP: Run ESLint Checks
+#       # - name: Run ESLint
+#       #   run: npm run lint # Assuming you have a 'lint' script in package.json
+#       #   # Or, if you prefer to run it directly:
+#       #   # run: npx eslint . --ext .js,.jsx,.ts,.tsx # Adjust extensions as needed
+#       #   # Optionally, you can make this step fail if there are warnings (by default ESLint only fails on errors)
+#       #   # run: npx eslint . --max-warnings=0 # This would fail the step if any warnings exist
+#       #   # If you want to integrate ESLint results into GitHub's UI as annotations:
+#       #   # uses: ataylorme/eslint-annotate-action@v2 # Requires ESLint to output a JSON report
+#       #   # with:
+#       #   #   report-json: eslint-report.json # Path to your ESLint JSON report file (needs a preceding step to generate it)
 
-      - name: Run SonarQube Analysis
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#       - name: Run SonarQube Analysis
+#         uses: SonarSource/sonarcloud-github-action@master
+#         env:
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         
 
-      - name: Check SonarQube Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@master
+#       - name: Check SonarQube Quality Gate
+#         uses: SonarSource/sonarqube-quality-gate-action@master
+#         env:
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#           SONAR_ORGANIZATION: farhansabbir
+
+#   build_and_push_docker_image:
+#     needs: build_and_analyze
+#     runs-on: ubuntu-latest
+#     if: success() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Determine Docker Image Tag
+#         id: get_tag
+#         run: |
+#           IMAGE_TAG="latest"
+#           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+#             IMAGE_TAG="${{ github.ref_name }}"
+#             echo "::notice file=ci.yml::Workflow triggered by tag: $IMAGE_TAG"
+#           else
+#             echo "::notice file=ci.yml::Workflow triggered by branch push. Using 'latest' tag."
+#           fi
+#           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
+
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+#       - name: Build and push Docker image
+#         id: docker_build
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: .
+#           push: true
+#           tags: |
+#             ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.get_tag.outputs.IMAGE_TAG }}
+#             ${{ env.DOCKER_IMAGE_NAME }}:latest
+#           cache-from: type=gha
+#           cache-to: type=gha,mode=max
+
+#       - name: Trigger Self-Hosted Runner for Deployment
+#         if: success() && startsWith(github.ref, 'refs/tags/')
+#         run: |
+#           IMAGE_TAG="${{ steps.get_tag.outputs.IMAGE_TAG }}"
+#           echo "Dispatching deployment workflow to self-hosted runner for tag: $IMAGE_TAG"
+#           curl -X POST \
+#           -H "Accept: application/vnd.github.v3+json" \
+#           -H "Authorization: token ${{ secrets.GH_PAT_DISPATCH }}" \
+#           https://api.github.com/repos/${{ github.repository }}/dispatches \
+#           -d '{
+#             "event_type": "deploy-to-ec2",
+#             "client_payload": {
+#               "image_tag": "'"$IMAGE_TAG"'",
+#               "docker_image_name": "${{ env.DOCKER_IMAGE_NAME }}"
+#             }
+#           }'
+
+name: Build
+on:
+  push:
+    branches:
+      - 'assignment/sonarqube'
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_ORGANIZATION: farhansabbir
-
-  build_and_push_docker_image:
-    needs: build_and_analyze
-    runs-on: ubuntu-latest
-    if: success() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Determine Docker Image Tag
-        id: get_tag
-        run: |
-          IMAGE_TAG="latest"
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            IMAGE_TAG="${{ github.ref_name }}"
-            echo "::notice file=ci.yml::Workflow triggered by tag: $IMAGE_TAG"
-          else
-            echo "::notice file=ci.yml::Workflow triggered by branch push. Using 'latest' tag."
-          fi
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        id: docker_build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.get_tag.outputs.IMAGE_TAG }}
-            ${{ env.DOCKER_IMAGE_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Trigger Self-Hosted Runner for Deployment
-        if: success() && startsWith(github.ref, 'refs/tags/')
-        run: |
-          IMAGE_TAG="${{ steps.get_tag.outputs.IMAGE_TAG }}"
-          echo "Dispatching deployment workflow to self-hosted runner for tag: $IMAGE_TAG"
-          curl -X POST \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Authorization: token ${{ secrets.GH_PAT_DISPATCH }}" \
-          https://api.github.com/repos/${{ github.repository }}/dispatches \
-          -d '{
-            "event_type": "deploy-to-ec2",
-            "client_payload": {
-              "image_tag": "'"$IMAGE_TAG"'",
-              "docker_image_name": "${{ env.DOCKER_IMAGE_NAME }}"
-            }
-          }'
