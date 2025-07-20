@@ -7,48 +7,42 @@ on:
         description: 'Docker image tag to deploy'
         required: true
         default: 'latest' # Default for manual triggers
-      docker_image_name: # Input for the full Docker image name (e.g., user/app-name)
+      docker_image_name:
         description: 'Full Docker image name (e.g., user/app-name)'
         required: true
 
 jobs:
   deploy:
-    runs-on: [self-hosted, deploy-ec2] # Ensure 'deploy-ec2' matches the label of your self-hosted runner
-    # This condition ensures the job only runs when triggered by the 'deploy-to-ec2' event from ci.yml
+    runs-on: [self-hosted, deploy-ec2]
     if: github.event.action == 'deploy-to-ec2'
     steps:
       - name: Get image tag and name from workflow dispatch
         run: |
-          # Use client_payload (from ci.yml dispatch) if present, otherwise use inputs (for manual trigger)
-          # These variables will be available as ${{ env.IMAGE_TAG }} and ${{ env.DOCKER_IMAGE_NAME }}
           DEPLOY_IMAGE_TAG="${{ github.event.client_payload.image_tag || github.event.inputs.image_tag }}"
           DEPLOY_DOCKER_IMAGE_NAME="${{ github.event.client_payload.docker_image_name || github.event.inputs.docker_image_name }}"
 
           echo "::notice::Received request to deploy image: ${DEPLOY_DOCKER_IMAGE_NAME}:${DEPLOY_IMAGE_TAG}"
-          echo "IMAGE_TAG=${DEPLOY_IMAGE_TAG}" >> $GITHUB_ENV # Set as environment variable for subsequent steps
-          echo "DOCKER_IMAGE_NAME=${DEPLOY_DOCKER_IMAGE_NAME}" >> $GITHUB_ENV # Set as environment variable for subsequent steps
+          echo "IMAGE_TAG=${DEPLOY_IMAGE_TAG}" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_NAME=${DEPLOY_DOCKER_IMAGE_NAME}" >> $GITHUB_ENV
 
       - name: Log in to Docker Hub
-        # This step is essential if your Docker Hub repository is private, allowing 'docker pull'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }} # Use the correct secret name
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Deploy application on EC2
         run: |
-          # Construct the full image name with the determined tag
           IMAGE="${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
-          CONTAINER_NAME="nextjs-app" # Recommended: Use a more descriptive name, e.g., 'nextjs-app' or 'my-nextjs-web'
-          HOST_PORT="80"           # The port on the EC2 host that will be exposed to the internet
-          CONTAINER_PORT="3000"    # The port your Nginx server inside the Docker container listens on (from Dockerfile/nginx.conf)
+          CONTAINER_NAME="nextjs-app"
+          HOST_PORT="80"
+          CONTAINER_PORT="3000"
 
           echo "--- Starting Deployment of ${IMAGE} ---"
 
           echo "1. Stopping and removing old container '${CONTAINER_NAME}' if it exists..."
-          # `|| true` prevents the script from failing if the container doesn't exist or isn't running
-          docker stop "$CONTAINER_NAME" || true # Added quotes for safety with variables
-          docker rm "$CONTAINER_NAME" || true   # Added quotes for safety with variables
+          docker stop "$CONTAINER_NAME" || true
+          docker rm "$CONTAINER_NAME" || true
           echo "   Old container handled."
 
           echo "2. Pulling new image: ${IMAGE}..."
@@ -56,7 +50,6 @@ jobs:
           echo "   Image pulled successfully."
 
           echo "3. Running new container '${CONTAINER_NAME}' from image ${IMAGE}..."
-          # --restart unless-stopped: Crucial for production. Automatically restart the container if Docker daemon restarts or EC2 reboots, unless explicitly stopped by a user.
           docker run -d \
             --name "$CONTAINER_NAME" \
             -p "$HOST_PORT":"$CONTAINER_PORT" \
@@ -64,19 +57,15 @@ jobs:
             "${IMAGE}"
           echo "   New container started."
 
-          # Optional: Add a short delay and a simple health check for immediate feedback
-          # This helps confirm the new container is actually responding after deployment
           echo "4. Waiting for container to become healthy (5 seconds)..."
           sleep 5
           echo "5. Performing a basic health check..."
-          # Use 'localhost' as it's running on the same EC2 instance.
-          # The '-f' (fail) option for curl makes it return non-zero on HTTP errors (e.g., 4xx, 5xx)
           curl -f "http://localhost:$HOST_PORT" > /dev/null 2>&1
           if [ $? -eq 0 ]; then
             echo "   Health check successful! Application is reachable."
           else
             echo "::error::Health check failed! Application might not be running correctly."
-            exit 1 # Fail the GitHub Actions job if health check fails
+            exit 1
           fi
 
           echo "--- Deployment successful for image: ${IMAGE} ---"
