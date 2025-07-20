@@ -4,9 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import UserPanel from "../../../component/ui/userPanel";
 
-export default function MonthlySheetClient({ params }) {
+export default function MonthlySheetClient({ slug }) {
   const router = useRouter();
-  const { slug } = params;
+
+  // Add a safeguard
+  if (!slug) {
+    return null; // Or a loading indicator
+  }
 
   // Parse the slug to get year and month
   const [year, month] = slug.split("-");

@@ -14,5 +14,5 @@ export async function generateStaticParams() {
 }
 
 export default function MonthlySheetPage({ params }) {
-  return <MonthlySheetClient params={params} />;
+  return <MonthlySheetClient slug={params.slug} />;
 }
