@@ -27,13 +27,6 @@ WORKDIR /usr/share/nginx/html
 # This will place index.html, 404.html, and other static pages directly in /usr/share/nginx/html
 COPY --from=builder /app/out/ .
 
-# Copy public folder - still good to have directly, though usually out/ will contain its static assets already
-# if you used image optimization within Next.js. If you have non-processed static files, keep this.
-# If your Next.js static export copies public assets directly into 'out' and handles them,
-# this line might become redundant or conflict, so verify your 'out' folder structure.
-# For simplicity, if 'out' contains everything, you might remove this line after testing.
-COPY --from=builder /app/public ./public
-
 # Expose port 3000 (from nginx.conf)
 EXPOSE 3000
 
