@@ -40,6 +40,6 @@ EXPOSE 3000
 # Nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d
-
+ 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
