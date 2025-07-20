@@ -23,7 +23,7 @@ RUN npm run build
 FROM nginx:1.21.0-alpine
 WORKDIR /usr/share/nginx/html
 
-# Copy the *contents* of the 'out' directory to Nginx's root
+# Copy the *co ntents* of the 'out' directory to Nginx's root
 # This will place index.html, 404.html, and other static pages directly in /usr/share/nginx/html
 COPY --from=builder /app/out/ .
 
