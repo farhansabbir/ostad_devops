@@ -21,7 +21,7 @@ RUN npm run build
 
 # 2. Final Stage
 FROM nginx:1.21.0-alpine
-WORKDIR /usr/share/nginx/html # This is Nginx's root directory
+WORKDIR /usr/share/nginx/html
 
 # Copy the *contents* of the 'out' directory to Nginx's root
 # This will place index.html, 404.html, and other static pages directly in /usr/share/nginx/html
