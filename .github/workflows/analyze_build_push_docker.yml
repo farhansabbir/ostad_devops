@@ -91,13 +91,12 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v5
         with:
-          context: . # Build context is the current directory (repo root)
-          push: true # Push the image to Docker Hub
-          # Tags to apply to the Docker image
+          context: .
+          push: true
           tags: |
-            ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.get_tag.outputs.IMAGE_TAG }} # Use the determined Git tag
-            ${{ env.DOCKER_IMAGE_NAME }}:latest # Also push 'latest' alias (common for most recent production build)
-          cache-from: type=gha # Use GitHub Actions cache for faster builds
+            ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.get_tag.outputs.IMAGE_TAG }}
+            ${{ env.DOCKER_IMAGE_NAME }}:latest
+          cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Trigger Self-Hosted Runner for Deployment
