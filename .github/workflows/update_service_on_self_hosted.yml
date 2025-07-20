@@ -15,7 +15,6 @@ jobs:
   deploy:
     runs-on: [self-hosted, deploy-ec2]
     if: github.event.action == 'deploy-to-ec2'
-
     steps:
       - name: Get image tag and name from workflow dispatch
         run: |
