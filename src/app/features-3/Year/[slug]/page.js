@@ -1,3 +1,5 @@
+"use client";
+
 export async function generateStaticParams() {
   // Generate params for the last 12 months as an example
   const months = Array.from({ length: 12 }, (_, i) => {
@@ -10,8 +12,6 @@ export async function generateStaticParams() {
  
   return months;
 }
-
-"use client";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
