@@ -59,7 +59,7 @@ jobs:
     # AND when the push is to a Git tag (for production deployments)
     # OR if you want to push to Docker Hub from 'main' branch, include it here.
     # Current condition: Only builds/pushes on `main` branch pushes OR `v*.*.*` tag pushes
-    if: success() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    if: success() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/assignment/sonarqube')
 
     steps:
       - name: Checkout code
