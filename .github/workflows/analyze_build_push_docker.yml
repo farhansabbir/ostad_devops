@@ -18,7 +18,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.CICD_SONAR_TOKEN }}
-      - name: SonarQube Gate
+      - name: SonarQube Quality Gate
         id: sonarqube-quality-gate-check
         uses: SonarSource/sonarqube-quality-gate-action@master
         env:
