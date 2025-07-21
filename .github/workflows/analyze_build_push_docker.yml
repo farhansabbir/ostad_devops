@@ -23,5 +23,7 @@ jobs:
         uses: SonarSource/sonarqube-quality-gate-action@master
         env:
           SONAR_TOKEN: ${{ secrets.CICD_SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: farhansabbir_cicd
+
       
           
