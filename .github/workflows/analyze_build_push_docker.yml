@@ -24,6 +24,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.CICD_SONAR_TOKEN }}
           SONAR_PROJECT_KEY: farhansabbir_cicd
+          SONAR_HOST_URL: https://sonarcloud.io
 
       
           
