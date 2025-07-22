@@ -63,8 +63,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: | 
-            - "${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:${{ steps.get_tag.outputs.tag }}"
-            - "${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:latest"
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:${{ steps.get_tag.outputs.tag }}, ${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:latest 
           
       
