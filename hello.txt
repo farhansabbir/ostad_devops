@@ -1,3 +1,0 @@
-this is the commit on hello.txt on main branch now
-
-and another unwanted change to check out the workflow is working fine

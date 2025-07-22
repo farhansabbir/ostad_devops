@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "farhansabbir",
+        "projectKey": "farhansabbir_cicd"
+    }
+}
