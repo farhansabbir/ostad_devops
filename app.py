@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import requests, uuid, os
 
 app = Flask(__name__)
@@ -6,9 +6,14 @@ app.config['WTF_CSRF_ENABLED'] = False  # Explicitly disable CSRF for REST API
 
 data = {}
 
-@app.get("/")
+@app.route("/", methods=['GET'])
 def root():
-    return jsonify(data)
+    return jsonify({"data":data})
+
+@app.route("/", methods=['POST'])
+def add_data():
+    data.update(request.json)
+    return jsonify({"data":data})
 
 
 
