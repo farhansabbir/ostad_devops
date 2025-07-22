@@ -67,4 +67,4 @@ jobs:
             - "${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:${{ steps.get_tag.outputs.tag }}"
             - "${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:latest"
           
-        
+      
