@@ -36,7 +36,7 @@ jobs:
       attestations: write
       id-token: write
     steps:
-      - name: Check out the repo
+      - name: Check out the repo with tags
         uses: actions/checkout@v4
 
       - name: Log in to Docker Hub
@@ -48,7 +48,7 @@ jobs:
         id: get_tag
         run: |
             TAG=$(git fetch --tags)
-            TAG=$(git describe --tags --exact-match 2>/dev/null || echo "")
+            TAG=$(git describe --tags --exact-match 2>/dev/null || echo "latest")
             echo "tag=$TAG" >> $GITHUB_OUTPUT
       - name: Build and push Docker image
         id: push
