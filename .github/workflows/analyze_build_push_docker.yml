@@ -47,7 +47,7 @@ jobs:
       - name: Get tag if exists
         id: get_tag
         run: |
-            TAG=$(git fetch --tags
+            TAG=$(git fetch --tags)
             TAG=$(git describe --tags --exact-match 2>/dev/null || echo "")
             echo "tag=$TAG" >> $GITHUB_OUTPUT
       - name: Build and push Docker image
