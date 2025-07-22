@@ -44,6 +44,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Get tag if exists
+        id: get_tag
+        run: |
+            TAG=$(git fetch --tags
+            TAG=$(git describe --tags --exact-match 2>/dev/null || echo "")
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@master
@@ -51,5 +57,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: "${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:${{ github.ref_name }}"
+          tags: "${{ secrets.DOCKERHUB_USERNAME }}/flaskapp:${{ steps.get_tag.outputs.tag }}"
           
