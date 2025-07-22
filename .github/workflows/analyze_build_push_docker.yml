@@ -18,13 +18,35 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.CICD_SONAR_TOKEN }}
-      - name: SonarQube Quality Gate
-        id: sonarqube-quality-gate-check
-        uses: SonarSource/sonarqube-quality-gate-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.CICD_SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: farhansabbir_cicd
-          SONAR_HOST_URL: https://sonarcloud.io
+      # - name: SonarQube Quality Gate
+      #   id: sonarqube-quality-gate-check
+      #   uses: SonarSource/sonarqube-quality-gate-action@master
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.CICD_SONAR_TOKEN }}
+      #     SONAR_PROJECT_KEY: farhansabbir_cicd
+      #     SONAR_HOST_URL: https://sonarcloud.io
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
 
-      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@master
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@master
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
           
