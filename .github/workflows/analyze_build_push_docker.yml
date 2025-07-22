@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - cicd/flask
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
