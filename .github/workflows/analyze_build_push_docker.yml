@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - '*'
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
@@ -49,9 +51,13 @@ jobs:
       - name: Get tag if exists
         id: get_tag
         run: |
-            TAG=$(git fetch --tags)
-            TAG=$(git describe --tags --exact-match 2>/dev/null || echo "latest")
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          git fetch --tags --force
+          if git describe --tags --exact-match > /dev/null 2>&1; then
+            TAG=$(git describe --tags --exact-match)
+          else
+            TAG="latest"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@master
