@@ -15,7 +15,6 @@ def add_data():
     data.update(request.json)
     return jsonify({"data":data})
 
-
 def main():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT') or 3000))
 
