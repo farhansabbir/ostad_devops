@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 import requests, uuid, os
 
 app = Flask(__name__)
+app.config['WTF_CSRF_ENABLED'] = False  # Explicitly disable CSRF for REST API
 
 data = {}
 
